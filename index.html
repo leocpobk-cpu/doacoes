@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Doações</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .item-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .item-card.completo {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .item-card.parcial {
+            border-color: #ff9800;
+            background: #fff8f0;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .item-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .item-quantidade {
+            font-size: 1.1em;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-fill.completo {
+            background: linear-gradient(90deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .doacoes-list {
+            margin-top: 15px;
+        }
+
+        .doacao-item {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doacao-item.dinheiro {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        .doacao-info {
+            flex-grow: 1;
+        }
+
+        .doador-nome {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .doacao-detalhes {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 3px;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .btn-doar {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-doar:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .btn-doar:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: #ccc;
+            color: #333;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #999;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .item-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤝 Sistema de Doações</h1>
+            <p>Controle de doações de viveres para a comunidade</p>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="number" id="stat-completos">0</div>
+                <div class="label">Itens Completos</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-parciais">0</div>
+                <div class="label">Itens Parciais</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-pendentes">0</div>
+                <div class="label">Itens Pendentes</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-doadores">0</div>
+                <div class="label">Doadores</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="stat-dinheiro">R$ 0</div>
+                <div class="label">Em Dinheiro</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">Carregando itens...</div>
+            <div id="itens-list"></div>
+        </div>
+    </div>
+
+    <!-- Modal de Doação -->
+    <div id="modal-doacao" class="modal">
+        <div class="modal-content">
+            <h2>Registrar Doação</h2>
+            <form id="form-doacao">
+                <input type="hidden" id="item-id">
+                
+                <div class="form-group">
+                    <label>Item:</label>
+                    <div id="item-nome-modal" style="padding: 12px; background: #f8f9fa; border-radius: 8px; font-weight: bold;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="doador-nome">Seu Nome: *</label>
+                    <input type="text" id="doador-nome" required placeholder="Digite seu nome">
+                </div>
+
+                <div class="form-group">
+                    <label for="doador-regiao">Região (Opcional):</label>
+                    <input type="text" id="doador-regiao" placeholder="Ex: R04, R13, Figueiral">
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo-doacao">Tipo de Doação: *</label>
+                    <select id="tipo-doacao" required>
+                        <option value="item">Doar o Item</option>
+                        <option value="dinheiro">Doar em Dinheiro</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="grupo-quantidade">
+                    <label for="quantidade">Quantidade: *</label>
+                    <input type="number" id="quantidade" step="0.01" min="0.01" required>
+                    <small id="quantidade-disponivel" style="color: #666; margin-top: 5px; display: block;"></small>
+                </div>
+
+                <div class="form-group" id="grupo-valor" style="display: none;">
+                    <label for="valor-dinheiro">Valor (R$): *</label>
+                    <input type="number" id="valor-dinheiro" step="0.01" min="0.01" placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="observacao">Observação (Opcional):</label>
+                    <input type="text" id="observacao" placeholder="Alguma observação adicional">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">✔ Confirmar Doação</button>
+                    <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let itensData = [];
+
+        // Carrega dados ao iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarItens();
+            carregarEstatisticas();
+        });
+
+        // Carrega todos os itens
+        async function carregarItens() {
+            try {
+                const response = await fetch(`${API_URL}/api/itens`);
+                itensData = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                renderizarItens();
+            } catch (error) {
+                console.error('Erro ao carregar itens:', error);
+                document.getElementById('loading').innerHTML = '❌ Erro ao carregar itens';
+            }
+        }
+
+        // Carrega estatísticas
+        async function carregarEstatisticas() {
+            try {
+                const response = await fetch(`${API_URL}/api/estatisticas`);
+                const stats = await response.json();
+                
+                document.getElementById('stat-completos').textContent = stats.itens_completos;
+                document.getElementById('stat-parciais').textContent = stats.itens_parciais;
+                document.getElementById('stat-pendentes').textContent = stats.itens_pendentes;
+                document.getElementById('stat-doadores').textContent = stats.total_doadores;
+                document.getElementById('stat-dinheiro').textContent = `R$ ${stats.total_dinheiro.toFixed(2)}`;
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+            }
+        }
+
+        // Renderiza todos os itens
+        function renderizarItens() {
+            const container = document.getElementById('itens-list');
+            
+            if (itensData.length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhum item encontrado</div>';
+                return;
+            }
+
+            container.innerHTML = itensData.map(item => {
+                const percentual = Math.min(100, item.percentual_doado);
+                const statusClass = percentual >= 100 ? 'completo' : percentual > 0 ? 'parcial' : '';
+                const restante = item.quantidade_total - item.quantidade_doada;
+
+                return `
+                    <div class="item-card ${statusClass}">
+                        <div class="item-header">
+                            <div class="item-title">${item.descricao}</div>
+                            <div class="item-quantidade">
+                                ${item.quantidade_doada} / ${item.quantidade_total} ${item.unidade}
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill ${percentual >= 100 ? 'completo' : ''}" 
+                                 style="width: ${percentual}%">
+                                ${percentual.toFixed(0)}%
+                            </div>
+                        </div>
+
+                        ${item.doacoes.length > 0 ? `
+                            <div class="doacoes-list">
+                                <strong>Doações registradas:</strong>
+                                ${item.doacoes.map(doacao => `
+                                    <div class="doacao-item ${doacao.tipo}">
+                                        <div class="doacao-info">
+                                            <div class="doador-nome">${doacao.doador_nome} ${doacao.doador_regiao ? `(${doacao.doador_regiao})` : ''}</div>
+                                            <div class="doacao-detalhes">
+                                                ${doacao.tipo === 'dinheiro' 
+                                                    ? `💰 R$ ${doacao.valor_dinheiro.toFixed(2)} (equivalente a ${doacao.quantidade} ${item.unidade})`
+                                                    : `📦 ${doacao.quantidade} ${item.unidade}`
+                                                }
+                                                ${doacao.observacao ? ` - ${doacao.observacao}` : ''}
+                                            </div>
+                                        </div>
+                                        <button class="btn-delete" onclick="removerDoacao(${doacao.id})">🗑️</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p style="color: #999; margin-top: 10px;">Nenhuma doação registrada ainda</p>'}
+
+                        <button class="btn-doar" 
+                                onclick="abrirModalDoacao(${item.id})"
+                                ${restante <= 0 ? 'disabled' : ''}>
+                            ${restante <= 0 ? '✔ Completo' : `➕ Doar (restam ${restante.toFixed(2)} ${item.unidade})`}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Abre modal de doação
+        function abrirModalDoacao(itemId) {
+            const item = itensData.find(i => i.id === itemId);
+            if (!item) return;
+
+            const restante = item.quantidade_total - item.quantidade_doada;
+            
+            document.getElementById('item-id').value = itemId;
+            document.getElementById('item-nome-modal').textContent = `${item.descricao} (${item.quantidade_total} ${item.unidade})`;
+            document.getElementById('quantidade').max = restante;
+            document.getElementById('quantidade').value = restante > 1 ? 1 : restante.toFixed(2);
+            document.getElementById('quantidade-disponivel').textContent = `Disponível: ${restante.toFixed(2)} ${item.unidade}`;
+            document.getElementById('modal-doacao').classList.add('active');
+        }
+
+        // Fecha modal
+        function fecharModal() {
+            document.getElementById('modal-doacao').classList.remove('active');
+            document.getElementById('form-doacao').reset();
+        }
+
+        // Alterna tipo de doação
+        document.getElementById('tipo-doacao').addEventListener('change', (e) => {
+            const isDinheiro = e.target.value === 'dinheiro';
+            document.getElementById('grupo-valor').style.display = isDinheiro ? 'block' : 'none';
+            document.getElementById('valor-dinheiro').required = isDinheiro;
+        });
+
+        // Envia doação
+        document.getElementById('form-doacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const dados = {
+                item_id: parseInt(document.getElementById('item-id').value),
+                doador_nome: document.getElementById('doador-nome').value.trim(),
+                doador_regiao: document.getElementById('doador-regiao').value.trim() || null,
+                quantidade: parseFloat(document.getElementById('quantidade').value),
+                tipo: document.getElementById('tipo-doacao').value,
+                valor_dinheiro: document.getElementById('tipo-doacao').value === 'dinheiro' 
+                    ? parseFloat(document.getElementById('valor-dinheiro').value) 
+                    : null,
+                observacao: document.getElementById('observacao').value.trim() || null
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/doacoes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Erro ao registrar doação');
+                }
+
+                alert('✅ Doação registrada com sucesso!');
+                fecharModal();
+                carregarItens();
+                carregarEstatisticas();
+            } catch (error) {
+                alert(`❌ ${error.message}`);
+            }
+        });
+
+        // Remove doação
+        async function removerDoacao(doacaoId) {
+            if (!confirm('Tem certeza que deseja remover esta doação?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/doacoes/${doacaoId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao remover doação');
+                }
+
+                alert('✅ Doação removida com sucesso!');
+                carregarItens();
+                carregarEstatisticas();
+            } catch (error) {
+                alert(`❌ ${error.message}`);
+            }
+        }
+
+        // Fecha modal ao clicar fora
+        document.getElementById('modal-doacao').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-doacao') {
+                fecharModal();
+            }
+        });
+    </script>
+</body>
+</html>
