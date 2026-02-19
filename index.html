@@ -347,15 +347,15 @@
                     <p><strong>Favorecido:</strong> Willem Santos - NUBANK</p>
                 </div>
 
-                <div class="form-group" id="grupo-quantidade">
-                    <label for="quantidade">Quantidade: *</label>
-                    <input type="number" id="quantidade" step="0.01" min="0.01" required>
-                    <small id="quantidade-disponivel"></small>
-                </div>
-
                 <div class="form-group" id="grupo-valor" style="display: none;">
                     <label for="valor-dinheiro">Valor (R$): *</label>
                     <input type="number" id="valor-dinheiro" step="0.01" min="0.01" placeholder="0.00">
+                </div>
+
+                <div class="form-group" id="grupo-quantidade">
+                    <label for="quantidade" id="label-quantidade">Quantidade: *</label>
+                    <input type="number" id="quantidade" step="0.01" min="0.01" required>
+                    <small id="quantidade-disponivel"></small>
                 </div>
 
                 <div class="form-group">
@@ -449,7 +449,7 @@
                     textoDoacoes = item.doacoes.map(d => {
                         let texto = `${d.doador_nome}${d.doador_regiao ? ' ' + d.doador_regiao : ''}`;
                         if (d.tipo_doacao === 'dinheiro') {
-                            texto += ` R$ ${parseFloat(d.valor_dinheiro || 0).toFixed(2)}`;
+                            texto += ` R$ ${parseFloat(d.valor_dinheiro || 0).toFixed(2)} (${parseFloat(d.quantidade || 0)} ${item.unidade})`;
                         } else {
                             texto += ` ${parseFloat(d.quantidade || 0)} ${item.unidade}`;
                         }
@@ -530,7 +530,7 @@
             document.getElementById('form-doacao').reset();
             document.getElementById('grupo-valor').style.display = 'none';
             document.getElementById('info-pix').style.display = 'none';
-            document.getElementById('grupo-quantidade').style.display = 'block';
+            document.getElementById('label-quantidade').textContent = 'Quantidade: *';
         }
 
         // Alterna tipo de doação
@@ -538,9 +538,11 @@
             const isDinheiro = e.target.value === 'dinheiro';
             document.getElementById('grupo-valor').style.display = isDinheiro ? 'block' : 'none';
             document.getElementById('info-pix').style.display = isDinheiro ? 'block' : 'none';
-            document.getElementById('grupo-quantidade').style.display = isDinheiro ? 'none' : 'block';
             document.getElementById('valor-dinheiro').required = isDinheiro;
-            document.getElementById('quantidade').required = !isDinheiro;
+            
+            // Muda o label do campo quantidade
+            const label = document.getElementById('label-quantidade');
+            label.textContent = isDinheiro ? 'Quantidade equivalente: *' : 'Quantidade: *';
         });
 
         // Envia doação
@@ -556,7 +558,7 @@
                     doador_nome: document.getElementById('doador-nome').value.trim(),
                     doador_regiao: document.getElementById('doador-regiao').value.trim() || null,
                     tipo_doacao: tipoDoacao,
-                    quantidade: tipoDoacao === 'item' ? parseFloat(document.getElementById('quantidade').value) : null,
+                    quantidade: parseFloat(document.getElementById('quantidade').value),
                     valor_dinheiro: tipoDoacao === 'dinheiro' ? parseFloat(document.getElementById('valor-dinheiro').value) : null,
                     observacao: document.getElementById('observacao').value.trim() || null
                 };
