@@ -6,6 +6,10 @@
     <meta name="description" content="Sistema de controle de doações de viveres para a comunidade">
     <meta name="theme-color" content="#667eea">
     <title>Sistema de Doações</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         * {
             margin: 0;
@@ -48,6 +52,21 @@
 
         .content {
             padding: 15px;
+        }
+
+        .resumo {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: clamp(0.85em, 2.5vw, 0.95em);
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
         }
 
         .lista-doacoes {
@@ -98,45 +117,39 @@
             content: '✅';
             position: absolute;
             right: 15px;
-            font-size: 1.2em;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .btn-doar-linha {
-            background: none;
+            background: #2196f3;
+            color: white;
             border: none;
-            color: #2196f3;
+            padding: 5px 12px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 0.9em;
-            text-decoration: underline;
-            padding: 0;
             margin-left: 10px;
             font-family: inherit;
         }
 
         .btn-doar-linha:hover {
-            color: #1976d2;
+            background: #1976d2;
         }
 
         .btn-remover {
-            background: none;
+            background: #f44336;
+            color: white;
             border: none;
-            color: #f44336;
+            padding: 3px 8px;
+            border-radius: 3px;
             cursor: pointer;
             font-size: 0.85em;
-            padding: 0 5px;
             margin-left: 5px;
         }
 
-        .resumo {
-            background: #e3f2fd;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            font-size: clamp(0.85em, 2.5vw, 0.95em);
-        }
-
-        .resumo strong {
-            color: #1976d2;
+        .btn-remover:hover {
+            background: #d32f2f;
         }
 
         .modal {
@@ -146,25 +159,24 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.5);
             z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
             overflow-y: auto;
+            padding: 20px;
         }
 
         .modal.active {
             display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .modal-content {
             background: white;
-            padding: 25px 20px;
             border-radius: 10px;
-            max-width: 450px;
+            padding: 20px;
+            max-width: 500px;
             width: 100%;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -172,7 +184,7 @@
         .modal-content h2 {
             margin-bottom: 15px;
             color: #333;
-            font-size: clamp(1.2em, 4vw, 1.5em);
+            font-size: clamp(1.2em, 3vw, 1.5em);
         }
 
         .form-group {
@@ -182,9 +194,9 @@
         .form-group label {
             display: block;
             margin-bottom: 5px;
-            color: #666;
             font-weight: 600;
-            font-size: clamp(0.9em, 2.5vw, 0.95em);
+            color: #555;
+            font-size: clamp(0.9em, 2.5vw, 1em);
         }
 
         .form-group input,
@@ -294,7 +306,7 @@
             </div>
 
             <ul class="lista-doacoes" id="lista-itens">
-                <!-- Lista será carregada aqui -->
+                <li class="loading">⏳ Carregando dados...</li>
             </ul>
         </div>
     </div>
@@ -361,128 +373,64 @@
 
     <script>
         // ============================================
-        // SISTEMA DE ARMAZENAMENTO LOCAL (localStorage)
+        // CONFIGURAÇÃO SUPABASE
+        // ============================================
+        
+        const SUPABASE_URL = 'https://fwmlimudntlrkeukvyjg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3bWxpbXVkbnRscmtldWt2eWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2OTkyNTMsImV4cCI6MjA4MDI3NTI1M30.Okcp4xYzu5FHlcn1baGFiy5dCvX2-mg1PVr9IiBh7Ko';
+        
+        // Cliente Supabase
+        const { createClient } = window.supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // SENHA DE ADMINISTRADOR
+        const SENHA_ADMIN = '0016275784390';
+
+        // ============================================
+        // FUNÇÕES DE BANCO DE DADOS
         // ============================================
 
-        const STORAGE_KEY = 'doacoes_data';
-        
-        // SENHA DE ADMINISTRADOR (altere para sua senha)
-        const SENHA_ADMIN = '0016275784390'; // ⚠️ ALTERE ESTA SENHA!
+        // Carrega todos os itens
+        async function carregarItens() {
+            try {
+                // Busca itens
+                const { data: itens, error: erroItens } = await supabaseClient
+                    .from('itens_doacao')
+                    .select('*')
+                    .order('id');
 
-        // Dados iniciais dos itens
-        const ITENS_INICIAIS = [
-            { id: 1, descricao: 'Arroz 5KG', quantidade_total: 5, unidade: 'pacotes' },
-            { id: 2, descricao: 'Coxa e Sobrecoxa (cortada em 5 pedaços)', quantidade_total: 50, unidade: 'kg' },
-            { id: 3, descricao: 'Cebola', quantidade_total: 2, unidade: 'kg' },
-            { id: 4, descricao: 'Pimentão Vermelho Grande', quantidade_total: 3, unidade: 'unidades' },
-            { id: 5, descricao: 'Pimentão Amarelo Grande', quantidade_total: 3, unidade: 'unidades' },
-            { id: 6, descricao: 'Lata de Milho grande', quantidade_total: 2, unidade: 'latas' },
-            { id: 7, descricao: 'Lata de Seleta de Legumes Grande', quantidade_total: 2, unidade: 'latas' },
-            { id: 8, descricao: 'Alho', quantidade_total: 1, unidade: 'kg' },
-            { id: 9, descricao: 'Óleo', quantidade_total: 10, unidade: 'unidades' },
-            { id: 10, descricao: 'Tomate', quantidade_total: 2, unidade: 'kg' },
-            { id: 11, descricao: 'Sal', quantidade_total: 1, unidade: 'pacote' },
-            { id: 12, descricao: 'Maço de Cebolinha', quantidade_total: 4, unidade: 'maços' },
-            { id: 13, descricao: 'Maço de Salsa', quantidade_total: 3, unidade: 'maços' },
-            { id: 14, descricao: 'Cenoura', quantidade_total: 10, unidade: 'kg' },
-            { id: 15, descricao: 'Farinha', quantidade_total: 10, unidade: 'kg' },
-            { id: 16, descricao: 'Maço de Couve', quantidade_total: 10, unidade: 'maços' },
-            { id: 17, descricao: 'Margarina', quantidade_total: 1, unidade: 'kg' },
-            { id: 18, descricao: 'Calabresa', quantidade_total: 1, unidade: 'pacote' },
-            { id: 19, descricao: 'Repolho Grande', quantidade_total: 4, unidade: 'unidades' },
-            { id: 20, descricao: 'Pé de Alface', quantidade_total: 10, unidade: 'pés' },
-            { id: 21, descricao: 'Bandeja de Isopor', quantidade_total: 300, unidade: 'unidades' },
-            { id: 22, descricao: 'Garfo', quantidade_total: 300, unidade: 'unidades' },
-            { id: 23, descricao: 'Fardo de Refrigerantes', quantidade_total: 7, unidade: 'fardos' }
-        ];
+                if (erroItens) throw erroItens;
 
-        // Doações já existentes
-        const DOACOES_INICIAIS = [
-            { id: 1, item_id: 1, doador_nome: 'Denner', doador_regiao: 'R13', quantidade: 2, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 2, item_id: 2, doador_nome: 'Denner', doador_regiao: 'R13', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 3, item_id: 8, doador_nome: 'Daniel Alves', doador_regiao: 'R09', quantidade: 1, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 4, item_id: 11, doador_nome: 'Daniel Alves', doador_regiao: 'R09', quantidade: 1, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 5, item_id: 14, doador_nome: 'Dc Lucas', doador_regiao: 'Figueiral', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 6, item_id: 15, doador_nome: 'Dc Lucas', doador_regiao: 'Figueiral', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 7, item_id: 16, doador_nome: 'Dc Lucas', doador_regiao: 'Figueiral', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 8, item_id: 17, doador_nome: 'Daniel Alves', doador_regiao: 'R09', quantidade: 1, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 9, item_id: 21, doador_nome: 'Damião', doador_regiao: 'R13', quantidade: 100, tipo: 'item', created_at: new Date().toISOString() },
-            { id: 10, item_id: 23, doador_nome: 'Gabriel', doador_regiao: 'R04', quantidade: 1, tipo: 'dinheiro', valor_dinheiro: 40.00, created_at: new Date().toISOString() }
-        ];
+                // Busca doações
+                const { data: doacoes, error: erroDoacoes } = await supabaseClient
+                    .from('doacoes')
+                    .select('*')
+                    .order('criado_em', { ascending: false });
 
-        let dados = {
-            itens: [],
-            doacoes: [],
-            nextDoacaoId: 11
-        };
+                if (erroDoacoes) throw erroDoacoes;
 
-        // Carrega ou inicializa dados
-        function carregarDados() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                dados = JSON.parse(saved);
-            } else {
-                dados.itens = ITENS_INICIAIS.map(item => ({
-                    ...item,
-                    quantidade_doada: 0
-                }));
-                dados.doacoes = [...DOACOES_INICIAIS];
-                atualizarQuantidadesDoadas();
-                salvarDados();
+                // Calcula quantidades doadas e prepara dados
+                const itensComDoacoes = itens.map(item => {
+                    const doacoesItem = doacoes.filter(d => d.item_id === item.id);
+                    const quantidade_doada = doacoesItem.reduce((sum, d) => sum + parseFloat(d.quantidade || 0), 0);
+                    
+                    return {
+                        ...item,
+                        quantidade_doada,
+                        doacoes: doacoesItem
+                    };
+                });
+
+                renderizarItens(itensComDoacoes);
+                atualizarResumo(itensComDoacoes, doacoes);
+            } catch (erro) {
+                console.error('Erro ao carregar dados:', erro);
+                document.getElementById('lista-itens').innerHTML = 
+                    '<li style="text-align:center;color:#f44336;">❌ Erro ao carregar dados. Verifique sua conexão.</li>';
             }
         }
 
-        // Salva dados no localStorage
-        function salvarDados() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
-        }
-
-        // Reseta todos os dados (APENAS ADMINISTRADOR)
-        function resetarDados() {
-            const senha = prompt('🔐 Esta ação requer senha de administrador:');
-            if (!senha) return;
-            
-            if (senha !== SENHA_ADMIN) {
-                alert('❌ Senha incorreta! Acesso negado.');
-                return;
-            }
-            
-            if (confirm('⚠️ Tem certeza que deseja apagar TODAS as doações e recomeçar do zero?')) {
-                localStorage.removeItem(STORAGE_KEY);
-                alert('✅ Dados resetados! A página será recarregada.');
-                location.reload();
-            }
-        }
-
-        // Atualiza quantidade doada de cada item
-        function atualizarQuantidadesDoadas() {
-            dados.itens.forEach(item => {
-                item.quantidade_doada = dados.doacoes
-                    .filter(d => d.item_id === item.id)
-                    .reduce((sum, d) => sum + d.quantidade, 0);
-            });
-        }
-
-        // Carrega itens com doações
-        function carregarItens() {
-            atualizarQuantidadesDoadas();
-            
-            const itensComDoacoes = dados.itens.map(item => {
-                const doacoesItem = dados.doacoes.filter(d => d.item_id === item.id);
-                const percentual = Math.min(100, (item.quantidade_doada * 100) / item.quantidade_total);
-                
-                return {
-                    ...item,
-                    doacoes: doacoesItem,
-                    percentual_doado: percentual
-                };
-            });
-
-            renderizarItens(itensComDoacoes);
-            atualizarResumo();
-        }
-
-        // Renderiza todos os itens em formato de lista simples
+        // Renderiza itens na lista
         function renderizarItens(itens) {
             const container = document.getElementById('lista-itens');
             
@@ -492,18 +440,18 @@
             }
 
             container.innerHTML = itens.map((item, index) => {
-                const restante = item.quantidade_total - item.quantidade_doada;
+                const restante = parseFloat(item.quantidade_total) - item.quantidade_doada;
                 const completo = restante <= 0;
                 
                 // Monta texto das doações
                 let textoDoacoes = '';
                 if (item.doacoes.length > 0) {
                     textoDoacoes = item.doacoes.map(d => {
-                        let texto = `${d.doador_nome} ${d.doador_regiao ? d.doador_regiao : ''}`;
-                        if (d.tipo === 'dinheiro') {
-                            texto += ` R$ ${d.valor_dinheiro.toFixed(2)}`;
+                        let texto = `${d.doador_nome}${d.doador_regiao ? ' ' + d.doador_regiao : ''}`;
+                        if (d.tipo_doacao === 'dinheiro') {
+                            texto += ` R$ ${parseFloat(d.valor_dinheiro || 0).toFixed(2)}`;
                         } else {
-                            texto += ` ${d.quantidade} ${item.unidade}`;
+                            texto += ` ${parseFloat(d.quantidade || 0)} ${item.unidade}`;
                         }
                         return `${texto} <button class="btn-remover" onclick="removerDoacao(${d.id})" title="Remover (somente admin)">🗑️</button>`;
                     }).join(', ');
@@ -512,13 +460,13 @@
                 // Monta texto de faltam
                 let textoFaltam = '';
                 if (!completo && item.doacoes.length > 0) {
-                    textoFaltam = `<span class="item-faltam">(Faltam ${restante} ${item.unidade})</span>`;
+                    textoFaltam = `<span class="item-faltam">(Faltam ${restante.toFixed(2)} ${item.unidade})</span>`;
                 }
 
                 return `
                     <li class="item-lista ${completo ? 'item-completo' : ''}">
                         <span class="item-numero">${index + 1}.</span>
-                        <span class="item-nome">${item.quantidade_total} ${item.unidade} de ${item.descricao.toLowerCase()}</span>
+                        <span class="item-nome">${item.descricao} ${parseFloat(item.quantidade_total)} ${item.unidade}</span>
                         ${textoDoacoes ? ` - <span class="item-doacoes">${textoDoacoes}</span>` : ''}
                         ${textoFaltam}
                         ${!completo ? `<button class="btn-doar-linha" onclick="abrirModalDoacao(${item.id})">Doar</button>` : ''}
@@ -527,35 +475,53 @@
             }).join('');
         }
 
-        // Atualiza resumo no topo
-        function atualizarResumo() {
-            const completos = dados.itens.filter(i => i.quantidade_doada >= i.quantidade_total).length;
-            const pendentes = dados.itens.filter(i => i.quantidade_doada === 0).length;
-            const doadores = new Set(dados.doacoes.map(d => d.doador_nome)).size;
-            const totalDinheiro = dados.doacoes
-                .filter(d => d.tipo === 'dinheiro')
-                .reduce((sum, d) => sum + (d.valor_dinheiro || 0), 0);
+        // Atualiza resumo
+        function atualizarResumo(itens, doacoes) {
+            const completos = itens.filter(i => i.quantidade_doada >= parseFloat(i.quantidade_total)).length;
+            const pendentes = itens.filter(i => i.quantidade_doada === 0).length;
+            const doadores = new Set(doacoes.map(d => d.doador_nome)).size;
+            const totalDinheiro = doacoes
+                .filter(d => d.tipo_doacao === 'dinheiro')
+                .reduce((sum, d) => sum + parseFloat(d.valor_dinheiro || 0), 0);
 
             const texto = `${completos} itens completos, ${pendentes} pendentes • ${doadores} doadores • R$ ${totalDinheiro.toFixed(2)} em dinheiro`;
             document.getElementById('resumo-texto').textContent = texto;
         }
 
         // Abre modal de doação
-        function abrirModalDoacao(itemId) {
-            const item = dados.itens.find(i => i.id === itemId);
-            if (!item) return;
+        async function abrirModalDoacao(itemId) {
+            try {
+                // Busca item
+                const { data: item, error } = await supabaseClient
+                    .from('itens_doacao')
+                    .select('*')
+                    .eq('id', itemId)
+                    .single();
 
-            const restante = item.quantidade_total - item.quantidade_doada;
-            
-            document.getElementById('item-id').value = itemId;
-            document.getElementById('item-nome-modal').textContent = item.descricao;
-            document.getElementById('quantidade').max = restante;
-            document.getElementById('quantidade').value = restante > 1 ? 1 : restante.toFixed(2);
-            document.getElementById('quantidade-disponivel').textContent = `Restam: ${restante.toFixed(2)} ${item.unidade}`;
-            document.getElementById('modal-doacao').classList.add('active');
-            
-            // Foca no campo nome para facilitar uso mobile
-            setTimeout(() => document.getElementById('doador-nome').focus(), 300);
+                if (error) throw error;
+
+                // Busca doações do item
+                const { data: doacoes } = await supabaseClient
+                    .from('doacoes')
+                    .select('quantidade')
+                    .eq('item_id', itemId);
+
+                const quantidade_doada = doacoes.reduce((sum, d) => sum + parseFloat(d.quantidade || 0), 0);
+                const restante = parseFloat(item.quantidade_total) - quantidade_doada;
+                
+                document.getElementById('item-id').value = itemId;
+                document.getElementById('item-nome-modal').textContent = item.descricao;
+                document.getElementById('quantidade').max = restante;
+                document.getElementById('quantidade').value = restante > 1 ? 1 : restante.toFixed(2);
+                document.getElementById('quantidade-disponivel').textContent = `Restam: ${restante.toFixed(2)} ${item.unidade}`;
+                document.getElementById('modal-doacao').classList.add('active');
+                
+                // Foca no campo nome
+                setTimeout(() => document.getElementById('doador-nome').focus(), 300);
+            } catch (erro) {
+                console.error('Erro ao abrir modal:', erro);
+                alert('❌ Erro ao carregar item. Tente novamente.');
+            }
         }
 
         // Fecha modal
@@ -578,43 +544,40 @@
         });
 
         // Envia doação
-        document.getElementById('form-doacao').addEventListener('submit', (e) => {
+        document.getElementById('form-doacao').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const itemId = parseInt(document.getElementById('item-id').value);
-            const item = dados.itens.find(i => i.id === itemId);
-            const quantidade = parseFloat(document.getElementById('quantidade').value);
-            const restante = item.quantidade_total - item.quantidade_doada;
+            const tipoDoacao = document.getElementById('tipo-doacao').value;
 
-            if (quantidade > restante) {
-                alert(`❌ Quantidade excede o disponível. Restam apenas ${restante.toFixed(2)} ${item.unidade}`);
-                return;
+            try {
+                const novaDoacao = {
+                    item_id: itemId,
+                    doador_nome: document.getElementById('doador-nome').value.trim(),
+                    doador_regiao: document.getElementById('doador-regiao').value.trim() || null,
+                    tipo_doacao: tipoDoacao,
+                    quantidade: tipoDoacao === 'item' ? parseFloat(document.getElementById('quantidade').value) : null,
+                    valor_dinheiro: tipoDoacao === 'dinheiro' ? parseFloat(document.getElementById('valor-dinheiro').value) : null,
+                    observacao: document.getElementById('observacao').value.trim() || null
+                };
+
+                const { error } = await supabaseClient
+                    .from('doacoes')
+                    .insert([novaDoacao]);
+
+                if (error) throw error;
+
+                alert('✅ Doação registrada com sucesso!');
+                fecharModal();
+                carregarItens();
+            } catch (erro) {
+                console.error('Erro ao salvar doação:', erro);
+                alert('❌ Erro ao registrar doação. Tente novamente.');
             }
-
-            const novaDoacao = {
-                id: dados.nextDoacaoId++,
-                item_id: itemId,
-                doador_nome: document.getElementById('doador-nome').value.trim(),
-                doador_regiao: document.getElementById('doador-regiao').value.trim() || null,
-                quantidade: quantidade,
-                tipo: document.getElementById('tipo-doacao').value,
-                valor_dinheiro: document.getElementById('tipo-doacao').value === 'dinheiro' 
-                    ? parseFloat(document.getElementById('valor-dinheiro').value) 
-                    : null,
-                observacao: document.getElementById('observacao').value.trim() || null,
-                created_at: new Date().toISOString()
-            };
-
-            dados.doacoes.push(novaDoacao);
-            salvarDados();
-
-            alert('✅ Doação registrada com sucesso!');
-            fecharModal();
-            carregarItens();
         });
 
-        // Remove doação (APENAS ADMINISTRADOR)
-        function removerDoacao(doacaoId) {
+        // Remove doação (APENAS ADMIN)
+        async function removerDoacao(doacaoId) {
             const senha = prompt('🔐 Esta ação requer senha de administrador:');
             if (!senha) return;
             
@@ -625,11 +588,20 @@
             
             if (!confirm('Tem certeza que deseja remover esta doação?')) return;
 
-            dados.doacoes = dados.doacoes.filter(d => d.id !== doacaoId);
-            salvarDados();
+            try {
+                const { error } = await supabaseClient
+                    .from('doacoes')
+                    .delete()
+                    .eq('id', doacaoId);
 
-            alert('✅ Doação removida com sucesso!');
-            carregarItens();
+                if (error) throw error;
+
+                alert('✅ Doação removida com sucesso!');
+                carregarItens();
+            } catch (erro) {
+                console.error('Erro ao remover doação:', erro);
+                alert('❌ Erro ao remover doação. Tente novamente.');
+            }
         }
 
         // Fecha modal ao clicar fora
@@ -641,10 +613,9 @@
 
         // Inicializa ao carregar página
         document.addEventListener('DOMContentLoaded', () => {
-            carregarDados();
+            console.log('✅ Sistema iniciado - conectado ao Supabase');
             carregarItens();
         });
     </script>
 </body>
 </html>
-
