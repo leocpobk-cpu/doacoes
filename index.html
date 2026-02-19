@@ -2,8 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Controle de Doações</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Sistema de controle de doações de viveres para a comunidade">
+    <meta name="theme-color" content="#667eea">
+    <title>Sistema de Doações</title>
     <style>
         * {
             margin: 0;
@@ -12,211 +14,129 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 10px;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2196f3;
             color: white;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: clamp(1.3em, 4vw, 1.8em);
+            margin-bottom: 5px;
         }
 
         .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .stat-card .number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-card .label {
-            color: #666;
-            margin-top: 5px;
+            font-size: clamp(0.85em, 2.5vw, 0.95em);
+            opacity: 0.95;
         }
 
         .content {
-            padding: 30px;
+            padding: 15px;
         }
 
-        .item-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+        .lista-doacoes {
+            list-style: none;
         }
 
-        .item-card:hover {
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-
-        .item-card.completo {
-            border-color: #4caf50;
-            background: #f1f8f4;
-        }
-
-        .item-card.parcial {
-            border-color: #ff9800;
-            background: #fff8f0;
-        }
-
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .item-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .item-quantidade {
-            font-size: 1.1em;
-            padding: 8px 15px;
-            border-radius: 20px;
-            background: #667eea;
-            color: white;
-            font-weight: bold;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background: #e0e0e0;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 15px;
+        .item-lista {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            line-height: 1.7;
             position: relative;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
+        .item-lista:hover {
+            background: #f9f9f9;
+        }
+
+        .item-numero {
+            color: #999;
             font-weight: bold;
+            display: inline-block;
+            min-width: 25px;
         }
 
-        .progress-fill.completo {
-            background: linear-gradient(90deg, #4caf50 0%, #45a049 100%);
+        .item-nome {
+            font-weight: 600;
+            color: #333;
         }
 
-        .doacoes-list {
-            margin-top: 15px;
+        .item-doacoes {
+            color: #2196f3;
+            font-weight: 500;
+            margin-left: 5px;
         }
 
-        .doacao-item {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .item-faltam {
+            color: #ff5722;
+            font-style: italic;
+            margin-left: 5px;
         }
 
-        .doacao-item.dinheiro {
-            background: #e8f5e9;
-            border-left: 4px solid #4caf50;
+        .item-completo {
+            background: #e8f5e9 !important;
         }
 
-        .doacao-info {
-            flex-grow: 1;
+        .item-completo::after {
+            content: '✅';
+            position: absolute;
+            right: 15px;
+            font-size: 1.2em;
         }
 
-        .doador-nome {
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .doacao-detalhes {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 3px;
-        }
-
-        .btn-delete {
-            background: #f44336;
-            color: white;
+        .btn-doar-linha {
+            background: none;
             border: none;
-            padding: 8px 15px;
+            color: #2196f3;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: underline;
+            padding: 0;
+            margin-left: 10px;
+            font-family: inherit;
+        }
+
+        .btn-doar-linha:hover {
+            color: #1976d2;
+        }
+
+        .btn-remover {
+            background: none;
+            border: none;
+            color: #f44336;
+            cursor: pointer;
+            font-size: 0.85em;
+            padding: 0 5px;
+            margin-left: 5px;
+        }
+
+        .resumo {
+            background: #e3f2fd;
+            padding: 15px;
+            margin-bottom: 15px;
             border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background 0.3s;
+            font-size: clamp(0.85em, 2.5vw, 0.95em);
         }
 
-        .btn-delete:hover {
-            background: #d32f2f;
-        }
-
-        .btn-doar {
-            background: #4caf50;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: all 0.3s;
-        }
-
-        .btn-doar:hover {
-            background: #45a049;
-            transform: scale(1.05);
-        }
-
-        .btn-doar:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
+        .resumo strong {
+            color: #1976d2;
         }
 
         .modal {
@@ -230,6 +150,8 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            overflow-y: auto;
         }
 
         .modal.active {
@@ -238,110 +160,123 @@
 
         .modal-content {
             background: white;
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 25px 20px;
+            border-radius: 10px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-content h2 {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             color: #333;
+            font-size: clamp(1.2em, 4vw, 1.5em);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #666;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: clamp(0.9em, 2.5vw, 0.95em);
         }
 
         .form-group input,
         .form-group select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            font-family: inherit;
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #2196f3;
+        }
+
+        .form-group small {
+            display: block;
+            color: #999;
+            margin-top: 3px;
+            font-size: clamp(0.8em, 2vw, 0.85em);
         }
 
         .form-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         .btn-primary {
-            flex: 1;
-            background: #667eea;
+            background: #2196f3;
             color: white;
             border: none;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: background 0.3s;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            font-weight: 600;
+            font-family: inherit;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: #1976d2;
         }
 
         .btn-secondary {
-            flex: 1;
             background: #ccc;
             color: #333;
             border: none;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
-            transition: background 0.3s;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            font-family: inherit;
         }
 
         .btn-secondary:hover {
             background: #999;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
+        .info-pix {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            display: none;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-            font-size: 1.2em;
+        .info-pix strong {
+            color: #1976d2;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05em;
         }
 
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
+        .info-pix p {
+            margin: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 10px;
             }
 
-            .stats {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .item-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+            .form-actions {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -349,36 +284,18 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤝 Sistema de Doações</h1>
-            <p>Controle de doações de viveres para a comunidade</p>
-        </div>
-
-        <div class="stats" id="stats">
-            <div class="stat-card">
-                <div class="number" id="stat-completos">0</div>
-                <div class="label">Itens Completos</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="stat-parciais">0</div>
-                <div class="label">Itens Parciais</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="stat-pendentes">0</div>
-                <div class="label">Itens Pendentes</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="stat-doadores">0</div>
-                <div class="label">Doadores</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="stat-dinheiro">R$ 0</div>
-                <div class="label">Em Dinheiro</div>
-            </div>
+            <h1>🤝 Controle de Doações</h1>
+            <p>Lista de viveres necessários</p>
         </div>
 
         <div class="content">
-            <div id="loading" class="loading">Carregando itens...</div>
-            <div id="itens-list"></div>
+            <div class="resumo">
+                <strong>Resumo:</strong> <span id="resumo-texto">Carregando...</span>
+            </div>
+
+            <ul class="lista-doacoes" id="lista-itens">
+                <!-- Lista será carregada aqui -->
+            </ul>
         </div>
     </div>
 
@@ -391,7 +308,7 @@
                 
                 <div class="form-group">
                     <label>Item:</label>
-                    <div id="item-nome-modal" style="padding: 12px; background: #f8f9fa; border-radius: 8px; font-weight: bold;"></div>
+                    <div id="item-nome-modal" style="padding: 10px; background: #f5f5f5; border-radius: 5px; font-weight: 600; font-size: 1.05em;"></div>
                 </div>
 
                 <div class="form-group">
@@ -412,10 +329,16 @@
                     </select>
                 </div>
 
+                <div class="info-pix" id="info-pix">
+                    <strong>📱 Dados para PIX:</strong>
+                    <p><strong>Chave:</strong> 65 99289-8916</p>
+                    <p><strong>Favorecido:</strong> Willem Santos - NUBANK</p>
+                </div>
+
                 <div class="form-group" id="grupo-quantidade">
                     <label for="quantidade">Quantidade: *</label>
                     <input type="number" id="quantidade" step="0.01" min="0.01" required>
-                    <small id="quantidade-disponivel" style="color: #666; margin-top: 5px; display: block;"></small>
+                    <small id="quantidade-disponivel"></small>
                 </div>
 
                 <div class="form-group" id="grupo-valor" style="display: none;">
@@ -429,7 +352,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn-primary">✔ Confirmar Doação</button>
+                    <button type="submit" class="btn-primary">Registrar</button>
                     <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
                 </div>
             </form>
@@ -437,190 +360,276 @@
     </div>
 
     <script>
-        const API_URL = window.location.origin;
-        let itensData = [];
+        // ============================================
+        // SISTEMA DE ARMAZENAMENTO LOCAL (localStorage)
+        // ============================================
 
-        // Carrega dados ao iniciar
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarItens();
-            carregarEstatisticas();
-        });
+        const STORAGE_KEY = 'doacoes_data';
+        
+        // SENHA DE ADMINISTRADOR (altere para sua senha)
+        const SENHA_ADMIN = '0016275784390'; // ⚠️ ALTERE ESTA SENHA!
 
-        // Carrega todos os itens
-        async function carregarItens() {
-            try {
-                const response = await fetch(`${API_URL}/api/itens`);
-                itensData = await response.json();
-                
-                document.getElementById('loading').style.display = 'none';
-                renderizarItens();
-            } catch (error) {
-                console.error('Erro ao carregar itens:', error);
-                document.getElementById('loading').innerHTML = '❌ Erro ao carregar itens';
+        // Dados iniciais dos itens
+        const ITENS_INICIAIS = [
+            { id: 1, descricao: 'Arroz', quantidade_total: 5, unidade: 'pacotes' },
+            { id: 2, descricao: 'Coxa e sobrecoxa (cortada em 5 pedaços)', quantidade_total: 50, unidade: 'kg' },
+            { id: 3, descricao: 'Cebola', quantidade_total: 2, unidade: 'kg' },
+            { id: 4, descricao: 'Pimentão vermelho grande', quantidade_total: 3, unidade: 'unidades' },
+            { id: 5, descricao: 'Pimentão amarelo grande', quantidade_total: 3, unidade: 'unidades' },
+            { id: 6, descricao: 'Lata de milho grande', quantidade_total: 2, unidade: 'latas' },
+            { id: 7, descricao: 'Lata de selecta grande', quantidade_total: 2, unidade: 'latas' },
+            { id: 8, descricao: 'Alho', quantidade_total: 1, unidade: 'kg' },
+            { id: 9, descricao: 'Óleo', quantidade_total: 10, unidade: 'unidades' },
+            { id: 10, descricao: 'Tomate', quantidade_total: 2, unidade: 'kg' },
+            { id: 11, descricao: 'Sal', quantidade_total: 1, unidade: 'pacote' },
+            { id: 12, descricao: 'Maço de cebolinha', quantidade_total: 4, unidade: 'maços' },
+            { id: 13, descricao: 'Maço de salsa', quantidade_total: 3, unidade: 'maços' },
+            { id: 14, descricao: 'Cenoura', quantidade_total: 10, unidade: 'kg' },
+            { id: 15, descricao: 'Farinha', quantidade_total: 10, unidade: 'kg' },
+            { id: 16, descricao: 'Maço de couve', quantidade_total: 10, unidade: 'maços' },
+            { id: 17, descricao: 'Margarina', quantidade_total: 1, unidade: 'kg' },
+            { id: 18, descricao: 'Calabresa', quantidade_total: 1, unidade: 'pacote' },
+            { id: 19, descricao: 'Repolho grande', quantidade_total: 4, unidade: 'unidades' },
+            { id: 20, descricao: 'Pé de alface', quantidade_total: 10, unidade: 'pés' },
+            { id: 21, descricao: 'Bandeja de isopor', quantidade_total: 300, unidade: 'unidades' },
+            { id: 22, descricao: 'Garfo', quantidade_total: 300, unidade: 'unidades' },
+            { id: 23, descricao: 'Fardo de refrigerante', quantidade_total: 7, unidade: 'fardos' }
+        ];
+
+        // Doações já existentes
+        const DOACOES_INICIAIS = [
+            { id: 1, item_id: 1, doador_nome: 'Denner', doador_regiao: 'R13', quantidade: 2, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 2, item_id: 2, doador_nome: 'Denner', doador_regiao: 'R13', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 3, item_id: 8, doador_nome: 'Daniel Alves', doador_regiao: 'R09', quantidade: 1, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 4, item_id: 11, doador_nome: 'Daniel Alves', doador_regiao: 'R09', quantidade: 1, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 5, item_id: 14, doador_nome: 'Dc Lucas', doador_regiao: 'Figueiral', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 6, item_id: 15, doador_nome: 'Dc Lucas', doador_regiao: 'Figueiral', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 7, item_id: 16, doador_nome: 'Dc Lucas', doador_regiao: 'Figueiral', quantidade: 10, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 8, item_id: 17, doador_nome: 'Daniel Alves', doador_regiao: 'R09', quantidade: 1, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 9, item_id: 21, doador_nome: 'Damião', doador_regiao: 'R13', quantidade: 100, tipo: 'item', created_at: new Date().toISOString() },
+            { id: 10, item_id: 23, doador_nome: 'Gabriel', doador_regiao: 'R04', quantidade: 1, tipo: 'dinheiro', valor_dinheiro: 40.00, created_at: new Date().toISOString() }
+        ];
+
+        let dados = {
+            itens: [],
+            doacoes: [],
+            nextDoacaoId: 11
+        };
+
+        // Carrega ou inicializa dados
+        function carregarDados() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                dados = JSON.parse(saved);
+            } else {
+                dados.itens = ITENS_INICIAIS.map(item => ({
+                    ...item,
+                    quantidade_doada: 0
+                }));
+                dados.doacoes = [...DOACOES_INICIAIS];
+                atualizarQuantidadesDoadas();
+                salvarDados();
             }
         }
 
-        // Carrega estatísticas
-        async function carregarEstatisticas() {
-            try {
-                const response = await fetch(`${API_URL}/api/estatisticas`);
-                const stats = await response.json();
-                
-                document.getElementById('stat-completos').textContent = stats.itens_completos;
-                document.getElementById('stat-parciais').textContent = stats.itens_parciais;
-                document.getElementById('stat-pendentes').textContent = stats.itens_pendentes;
-                document.getElementById('stat-doadores').textContent = stats.total_doadores;
-                document.getElementById('stat-dinheiro').textContent = `R$ ${stats.total_dinheiro.toFixed(2)}`;
-            } catch (error) {
-                console.error('Erro ao carregar estatísticas:', error);
-            }
+        // Salva dados no localStorage
+        function salvarDados() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
         }
 
-        // Renderiza todos os itens
-        function renderizarItens() {
-            const container = document.getElementById('itens-list');
+        // Reseta todos os dados (APENAS ADMINISTRADOR)
+        function resetarDados() {
+            const senha = prompt('🔐 Esta ação requer senha de administrador:');
+            if (!senha) return;
             
-            if (itensData.length === 0) {
-                container.innerHTML = '<div class="empty-state">Nenhum item encontrado</div>';
+            if (senha !== SENHA_ADMIN) {
+                alert('❌ Senha incorreta! Acesso negado.');
+                return;
+            }
+            
+            if (confirm('⚠️ Tem certeza que deseja apagar TODAS as doações e recomeçar do zero?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                alert('✅ Dados resetados! A página será recarregada.');
+                location.reload();
+            }
+        }
+
+        // Atualiza quantidade doada de cada item
+        function atualizarQuantidadesDoadas() {
+            dados.itens.forEach(item => {
+                item.quantidade_doada = dados.doacoes
+                    .filter(d => d.item_id === item.id)
+                    .reduce((sum, d) => sum + d.quantidade, 0);
+            });
+        }
+
+        // Carrega itens com doações
+        function carregarItens() {
+            atualizarQuantidadesDoadas();
+            
+            const itensComDoacoes = dados.itens.map(item => {
+                const doacoesItem = dados.doacoes.filter(d => d.item_id === item.id);
+                const percentual = Math.min(100, (item.quantidade_doada * 100) / item.quantidade_total);
+                
+                return {
+                    ...item,
+                    doacoes: doacoesItem,
+                    percentual_doado: percentual
+                };
+            });
+
+            renderizarItens(itensComDoacoes);
+            atualizarResumo();
+        }
+
+        // Renderiza todos os itens em formato de lista simples
+        function renderizarItens(itens) {
+            const container = document.getElementById('lista-itens');
+            
+            if (itens.length === 0) {
+                container.innerHTML = '<li style="text-align:center;color:#999;">Nenhum item encontrado</li>';
                 return;
             }
 
-            container.innerHTML = itensData.map(item => {
-                const percentual = Math.min(100, item.percentual_doado);
-                const statusClass = percentual >= 100 ? 'completo' : percentual > 0 ? 'parcial' : '';
+            container.innerHTML = itens.map((item, index) => {
                 const restante = item.quantidade_total - item.quantidade_doada;
+                const completo = restante <= 0;
+                
+                // Monta texto das doações
+                let textoDoacoes = '';
+                if (item.doacoes.length > 0) {
+                    textoDoacoes = item.doacoes.map(d => {
+                        let texto = `${d.doador_nome} ${d.doador_regiao ? d.doador_regiao : ''}`;
+                        if (d.tipo === 'dinheiro') {
+                            texto += ` R$ ${d.valor_dinheiro.toFixed(2)}`;
+                        } else {
+                            texto += ` ${d.quantidade} ${item.unidade}`;
+                        }
+                        return `${texto} <button class="btn-remover" onclick="removerDoacao(${d.id})" title="Remover (somente admin)">🗑️</button>`;
+                    }).join(', ');
+                }
+                
+                // Monta texto de faltam
+                let textoFaltam = '';
+                if (!completo && item.doacoes.length > 0) {
+                    textoFaltam = `<span class="item-faltam">(Faltam ${restante} ${item.unidade})</span>`;
+                }
 
                 return `
-                    <div class="item-card ${statusClass}">
-                        <div class="item-header">
-                            <div class="item-title">${item.descricao}</div>
-                            <div class="item-quantidade">
-                                ${item.quantidade_doada} / ${item.quantidade_total} ${item.unidade}
-                            </div>
-                        </div>
-                        
-                        <div class="progress-bar">
-                            <div class="progress-fill ${percentual >= 100 ? 'completo' : ''}" 
-                                 style="width: ${percentual}%">
-                                ${percentual.toFixed(0)}%
-                            </div>
-                        </div>
-
-                        ${item.doacoes.length > 0 ? `
-                            <div class="doacoes-list">
-                                <strong>Doações registradas:</strong>
-                                ${item.doacoes.map(doacao => `
-                                    <div class="doacao-item ${doacao.tipo}">
-                                        <div class="doacao-info">
-                                            <div class="doador-nome">${doacao.doador_nome} ${doacao.doador_regiao ? `(${doacao.doador_regiao})` : ''}</div>
-                                            <div class="doacao-detalhes">
-                                                ${doacao.tipo === 'dinheiro' 
-                                                    ? `💰 R$ ${doacao.valor_dinheiro.toFixed(2)} (equivalente a ${doacao.quantidade} ${item.unidade})`
-                                                    : `📦 ${doacao.quantidade} ${item.unidade}`
-                                                }
-                                                ${doacao.observacao ? ` - ${doacao.observacao}` : ''}
-                                            </div>
-                                        </div>
-                                        <button class="btn-delete" onclick="removerDoacao(${doacao.id})">🗑️</button>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : '<p style="color: #999; margin-top: 10px;">Nenhuma doação registrada ainda</p>'}
-
-                        <button class="btn-doar" 
-                                onclick="abrirModalDoacao(${item.id})"
-                                ${restante <= 0 ? 'disabled' : ''}>
-                            ${restante <= 0 ? '✔ Completo' : `➕ Doar (restam ${restante.toFixed(2)} ${item.unidade})`}
-                        </button>
-                    </div>
+                    <li class="item-lista ${completo ? 'item-completo' : ''}">
+                        <span class="item-numero">${index + 1}.</span>
+                        <span class="item-nome">${item.quantidade_total} ${item.unidade} de ${item.descricao.toLowerCase()}</span>
+                        ${textoDoacoes ? ` - <span class="item-doacoes">${textoDoacoes}</span>` : ''}
+                        ${textoFaltam}
+                        ${!completo ? `<button class="btn-doar-linha" onclick="abrirModalDoacao(${item.id})">Doar</button>` : ''}
+                    </li>
                 `;
             }).join('');
         }
 
+        // Atualiza resumo no topo
+        function atualizarResumo() {
+            const completos = dados.itens.filter(i => i.quantidade_doada >= i.quantidade_total).length;
+            const pendentes = dados.itens.filter(i => i.quantidade_doada === 0).length;
+            const doadores = new Set(dados.doacoes.map(d => d.doador_nome)).size;
+            const totalDinheiro = dados.doacoes
+                .filter(d => d.tipo === 'dinheiro')
+                .reduce((sum, d) => sum + (d.valor_dinheiro || 0), 0);
+
+            const texto = `${completos} itens completos, ${pendentes} pendentes • ${doadores} doadores • R$ ${totalDinheiro.toFixed(2)} em dinheiro`;
+            document.getElementById('resumo-texto').textContent = texto;
+        }
+
         // Abre modal de doação
         function abrirModalDoacao(itemId) {
-            const item = itensData.find(i => i.id === itemId);
+            const item = dados.itens.find(i => i.id === itemId);
             if (!item) return;
 
             const restante = item.quantidade_total - item.quantidade_doada;
             
             document.getElementById('item-id').value = itemId;
-            document.getElementById('item-nome-modal').textContent = `${item.descricao} (${item.quantidade_total} ${item.unidade})`;
+            document.getElementById('item-nome-modal').textContent = item.descricao;
             document.getElementById('quantidade').max = restante;
             document.getElementById('quantidade').value = restante > 1 ? 1 : restante.toFixed(2);
-            document.getElementById('quantidade-disponivel').textContent = `Disponível: ${restante.toFixed(2)} ${item.unidade}`;
+            document.getElementById('quantidade-disponivel').textContent = `Restam: ${restante.toFixed(2)} ${item.unidade}`;
             document.getElementById('modal-doacao').classList.add('active');
+            
+            // Foca no campo nome para facilitar uso mobile
+            setTimeout(() => document.getElementById('doador-nome').focus(), 300);
         }
 
         // Fecha modal
         function fecharModal() {
             document.getElementById('modal-doacao').classList.remove('active');
             document.getElementById('form-doacao').reset();
+            document.getElementById('grupo-valor').style.display = 'none';
+            document.getElementById('info-pix').style.display = 'none';
+            document.getElementById('grupo-quantidade').style.display = 'block';
         }
 
         // Alterna tipo de doação
         document.getElementById('tipo-doacao').addEventListener('change', (e) => {
             const isDinheiro = e.target.value === 'dinheiro';
             document.getElementById('grupo-valor').style.display = isDinheiro ? 'block' : 'none';
+            document.getElementById('info-pix').style.display = isDinheiro ? 'block' : 'none';
+            document.getElementById('grupo-quantidade').style.display = isDinheiro ? 'none' : 'block';
             document.getElementById('valor-dinheiro').required = isDinheiro;
+            document.getElementById('quantidade').required = !isDinheiro;
         });
 
         // Envia doação
-        document.getElementById('form-doacao').addEventListener('submit', async (e) => {
+        document.getElementById('form-doacao').addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const dados = {
-                item_id: parseInt(document.getElementById('item-id').value),
+            const itemId = parseInt(document.getElementById('item-id').value);
+            const item = dados.itens.find(i => i.id === itemId);
+            const quantidade = parseFloat(document.getElementById('quantidade').value);
+            const restante = item.quantidade_total - item.quantidade_doada;
+
+            if (quantidade > restante) {
+                alert(`❌ Quantidade excede o disponível. Restam apenas ${restante.toFixed(2)} ${item.unidade}`);
+                return;
+            }
+
+            const novaDoacao = {
+                id: dados.nextDoacaoId++,
+                item_id: itemId,
                 doador_nome: document.getElementById('doador-nome').value.trim(),
                 doador_regiao: document.getElementById('doador-regiao').value.trim() || null,
-                quantidade: parseFloat(document.getElementById('quantidade').value),
+                quantidade: quantidade,
                 tipo: document.getElementById('tipo-doacao').value,
                 valor_dinheiro: document.getElementById('tipo-doacao').value === 'dinheiro' 
                     ? parseFloat(document.getElementById('valor-dinheiro').value) 
                     : null,
-                observacao: document.getElementById('observacao').value.trim() || null
+                observacao: document.getElementById('observacao').value.trim() || null,
+                created_at: new Date().toISOString()
             };
 
-            try {
-                const response = await fetch(`${API_URL}/api/doacoes`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
+            dados.doacoes.push(novaDoacao);
+            salvarDados();
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Erro ao registrar doação');
-                }
-
-                alert('✅ Doação registrada com sucesso!');
-                fecharModal();
-                carregarItens();
-                carregarEstatisticas();
-            } catch (error) {
-                alert(`❌ ${error.message}`);
-            }
+            alert('✅ Doação registrada com sucesso!');
+            fecharModal();
+            carregarItens();
         });
 
-        // Remove doação
-        async function removerDoacao(doacaoId) {
+        // Remove doação (APENAS ADMINISTRADOR)
+        function removerDoacao(doacaoId) {
+            const senha = prompt('🔐 Esta ação requer senha de administrador:');
+            if (!senha) return;
+            
+            if (senha !== SENHA_ADMIN) {
+                alert('❌ Senha incorreta! Apenas administradores podem remover doações.');
+                return;
+            }
+            
             if (!confirm('Tem certeza que deseja remover esta doação?')) return;
 
-            try {
-                const response = await fetch(`${API_URL}/api/doacoes/${doacaoId}`, {
-                    method: 'DELETE'
-                });
+            dados.doacoes = dados.doacoes.filter(d => d.id !== doacaoId);
+            salvarDados();
 
-                if (!response.ok) {
-                    throw new Error('Erro ao remover doação');
-                }
-
-                alert('✅ Doação removida com sucesso!');
-                carregarItens();
-                carregarEstatisticas();
-            } catch (error) {
-                alert(`❌ ${error.message}`);
-            }
+            alert('✅ Doação removida com sucesso!');
+            carregarItens();
         }
 
         // Fecha modal ao clicar fora
@@ -628,6 +637,12 @@
             if (e.target.id === 'modal-doacao') {
                 fecharModal();
             }
+        });
+
+        // Inicializa ao carregar página
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDados();
+            carregarItens();
         });
     </script>
 </body>
