@@ -79,6 +79,7 @@
             font-size: clamp(0.9em, 2.5vw, 1em);
             line-height: 1.7;
             position: relative;
+            padding-right: 40px;
         }
 
         .item-lista:hover {
@@ -282,6 +283,47 @@
             line-height: 1.6;
         }
 
+        /* Barra de progresso */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 8px 0 5px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.4s ease, background 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar.baixo {
+            background: linear-gradient(90deg, #f44336, #ff5722);
+        }
+
+        .progress-bar.medio {
+            background: linear-gradient(90deg, #ff9800, #ffc107);
+        }
+
+        .progress-bar.alto {
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+        }
+
+        .progress-bar.completo {
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+        }
+
+        .progress-label {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 2px;
+            display: block;
+        }
+
         @media (max-width: 600px) {
             .content {
                 padding: 10px;
@@ -442,6 +484,13 @@
             container.innerHTML = itens.map((item, index) => {
                 const restante = parseFloat(item.quantidade_total) - item.quantidade_doada;
                 const completo = restante <= 0;
+                const percentual = Math.min((item.quantidade_doada / parseFloat(item.quantidade_total)) * 100, 100);
+                
+                // Define classe da barra conforme progresso
+                let progressClass = 'baixo';
+                if (percentual >= 100) progressClass = 'completo';
+                else if (percentual >= 70) progressClass = 'alto';
+                else if (percentual >= 40) progressClass = 'medio';
                 
                 // Monta texto das doações
                 let textoDoacoes = '';
@@ -465,10 +514,16 @@
 
                 return `
                     <li class="item-lista ${completo ? 'item-completo' : ''}">
-                        <span class="item-numero">${index + 1}.</span>
-                        <span class="item-nome">${item.descricao} ${parseFloat(item.quantidade_total)} ${item.unidade}</span>
-                        ${textoDoacoes ? ` - <span class="item-doacoes">${textoDoacoes}</span>` : ''}
-                        ${textoFaltam}
+                        <div>
+                            <span class="item-numero">${index + 1}.</span>
+                            <span class="item-nome">${item.descricao} ${parseFloat(item.quantidade_total)} ${item.unidade}</span>
+                            <div class="progress-container">
+                                <div class="progress-bar ${progressClass}" style="width: ${percentual}%"></div>
+                            </div>
+                            <span class="progress-label">${percentual.toFixed(0)}% concluído (${item.quantidade_doada.toFixed(1)} de ${parseFloat(item.quantidade_total)} ${item.unidade})</span>
+                        </div>
+                        ${textoDoacoes ? `<div style="margin-top:8px;"><span class="item-doacoes">${textoDoacoes}</span></div>` : ''}
+                        ${textoFaltam ? `<div>${textoFaltam}</div>` : ''}
                         ${!completo ? `<button class="btn-doar-linha" onclick="abrirModalDoacao(${item.id})">Doar</button>` : ''}
                     </li>
                 `;
