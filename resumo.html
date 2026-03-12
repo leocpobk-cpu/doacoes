@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Acompanhe o progresso das doações da Feira Gastronômica COOPHAMIL">
+    <title>🍓 Resumo - Feira Gastronômica COOPHAMIL</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .item-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .item-card.completo {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .item-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .item-status {
+            font-size: 1.5em;
+        }
+
+        .progress-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 25px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .progress-bar.completo {
+            background: linear-gradient(90deg, #4caf50, #45a049);
+        }
+
+        .item-details {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .doacoes-recentes {
+            margin-top: 40px;
+        }
+
+        .doacao-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .doacao-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .doador-nome {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .doacao-data {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .doacao-info {
+            color: #666;
+        }
+
+        .pix-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .pix-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .pix-key {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .stat-card .number {
+                font-size: 2em;
+            }
+
+            .item-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍓 Feira Gastronômica COOPHAMIL</h1>
+            <p>Acompanhe o progresso das doações</p>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="loading">⏳ Carregando estatísticas...</div>
+        </div>
+
+        <div class="content">
+            <div class="pix-box">
+                <h3>💰 Quer contribuir com dinheiro?</h3>
+                <p><strong>Chave PIX:</strong> leocpo@gmail.com</p>
+                <p><strong>Favorecido:</strong> Leonardo Cezario Pinto de Oliveira</p>
+            </div>
+
+            <h2 class="section-title">📋 Itens Necessários</h2>
+            <div id="itens-lista">
+                <div class="loading">⏳ Carregando itens...</div>
+            </div>
+
+            <div class="doacoes-recentes">
+                <h2 class="section-title">🕒 Últimas Doações</h2>
+                <div id="ultimas-doacoes">
+                    <div class="loading">⏳ Carregando doações...</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="index-supabase.html" class="btn">💝 Fazer uma Doação</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            🍓 Feira Gastronômica COOPHAMIL 2026<br>
+            Atualizado em tempo real
+        </div>
+    </div>
+
+    <script>
+        // Configuração Supabase
+        const SUPABASE_URL = 'https://fwmlimudntlrkeukvyjg.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_gx8_WdV2x6n9FoZooniJCQ_s0hWGsiW';
+        
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Carregar dados ao iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarEstatisticas();
+            carregarItens();
+            carregarUltimasDoacoes();
+        });
+
+        async function carregarEstatisticas() {
+            try {
+                const { data: itens } = await supabase.from('itens_doacao').select('*');
+                const { data: doacoes } = await supabase.from('doacoes').select('*');
+
+                const completos = itens.filter(item => {
+                    const doado = doacoes
+                        .filter(d => d.item_id === item.id)
+                        .reduce((sum, d) => sum + parseFloat(d.quantidade || 0), 0);
+                    return doado >= parseFloat(item.quantidade_total);
+                }).length;
+
+                const pendentes = itens.filter(item => {
+                    const doado = doacoes
+                        .filter(d => d.item_id === item.id)
+                        .reduce((sum, d) => sum + parseFloat(d.quantidade || 0), 0);
+                    return doado === 0;
+                }).length;
+
+                const doadores = new Set(doacoes.map(d => d.doador_nome)).size;
+
+                const dinheiro = doacoes
+                    .filter(d => d.tipo_doacao === 'dinheiro')
+                    .reduce((sum, d) => sum + parseFloat(d.valor_dinheiro || 0), 0);
+
+                const parciais = itens.length - completos - pendentes;
+
+                document.getElementById('stats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="emoji">✅</div>
+                        <div class="number">${completos}</div>
+                        <div class="label">Itens Completos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="emoji">🔄</div>
+                        <div class="number">${parciais}</div>
+                        <div class="label">Em Andamento</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="emoji">⏳</div>
+                        <div class="number">${pendentes}</div>
+                        <div class="label">Pendentes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="emoji">👥</div>
+                        <div class="number">${doadores}</div>
+                        <div class="label">Doadores</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="emoji">💰</div>
+                        <div class="number">R$ ${dinheiro.toFixed(2)}</div>
+                        <div class="label">Arrecadados</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+                document.getElementById('stats').innerHTML = '<div class="loading">❌ Erro ao carregar</div>';
+            }
+        }
+
+        async function carregarItens() {
+            try {
+                const { data: itens } = await supabase.from('itens_doacao').select('*').order('id');
+                const { data: doacoes } = await supabase.from('doacoes').select('*');
+
+                let html = '';
+
+                itens.forEach(item => {
+                    const doado = doacoes
+                        .filter(d => d.item_id === item.id)
+                        .reduce((sum, d) => sum + parseFloat(d.quantidade || 0), 0);
+
+                    const total = parseFloat(item.quantidade_total);
+                    const percentual = Math.min((doado / total) * 100, 100);
+                    const falta = Math.max(total - doado, 0);
+                    const completo = percentual >= 100;
+
+                    let status = '⏳';
+                    if (percentual >= 100) status = '✅';
+                    else if (percentual >= 70) status = '🟢';
+                    else if (percentual >= 40) status = '🟡';
+                    else if (percentual > 0) status = '🔴';
+
+                    html += `
+                        <div class="item-card ${completo ? 'completo' : ''}">
+                            <div class="item-header">
+                                <div class="item-name">${item.descricao}</div>
+                                <div class="item-status">${status}</div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar ${completo ? 'completo' : ''}" style="width: ${percentual}%">
+                                    ${percentual.toFixed(0)}%
+                                </div>
+                            </div>
+                            <div class="item-details">
+                                <span>Doado: ${doado.toFixed(1)} ${item.unidade}</span>
+                                <span>Meta: ${total} ${item.unidade}</span>
+                            </div>
+                            ${falta > 0 ? `<div class="item-details" style="margin-top: 5px;"><span style="color: #e91e63; font-weight: bold;">Faltam: ${falta.toFixed(1)} ${item.unidade}</span></div>` : ''}
+                        </div>
+                    `;
+                });
+
+                document.getElementById('itens-lista').innerHTML = html || '<p>Nenhum item cadastrado.</p>';
+            } catch (error) {
+                console.error('Erro ao carregar itens:', error);
+                document.getElementById('itens-lista').innerHTML = '<div class="loading">❌ Erro ao carregar</div>';
+            }
+        }
+
+        async function carregarUltimasDoacoes() {
+            try {
+                const { data: doacoes } = await supabase
+                    .from('doacoes')
+                    .select('*, itens_doacao(descricao, unidade)')
+                    .order('data_doacao', { ascending: false })
+                    .limit(10);
+
+                if (!doacoes || doacoes.length === 0) {
+                    document.getElementById('ultimas-doacoes').innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Ainda não há doações registradas.</p>';
+                    return;
+                }
+
+                let html = '';
+
+                doacoes.forEach(doacao => {
+                    const data = new Date(doacao.data_doacao);
+                    const dataFormatada = data.toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    let info = '';
+                    if (doacao.tipo_doacao === 'dinheiro') {
+                        info = `💰 R$ ${parseFloat(doacao.valor_dinheiro).toFixed(2)}`;
+                        if (doacao.itens_doacao) {
+                            info += ` (equiv. a ${doacao.quantidade} ${doacao.itens_doacao.unidade} de ${doacao.itens_doacao.descricao})`;
+                        }
+                    } else {
+                        info = `📦 ${doacao.quantidade} ${doacao.itens_doacao?.unidade || ''} de ${doacao.itens_doacao?.descricao || 'item'}`;
+                    }
+
+                    html += `
+                        <div class="doacao-item">
+                            <div class="doacao-header">
+                                <span class="doador-nome">${doacao.doador_nome}</span>
+                                <span class="doacao-data">${dataFormatada}</span>
+                            </div>
+                            <div class="doacao-info">${info}</div>
+                            ${doacao.doador_regiao ? `<div class="doacao-info" style="font-size: 0.85em; color: #999;">Região: ${doacao.doador_regiao}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                document.getElementById('ultimas-doacoes').innerHTML = html;
+            } catch (error) {
+                console.error('Erro ao carregar doações:', error);
+                document.getElementById('ultimas-doacoes').innerHTML = '<div class="loading">❌ Erro ao carregar</div>';
+            }
+        }
+
+        // Atualizar automaticamente a cada 30 segundos
+        setInterval(() => {
+            carregarEstatisticas();
+            carregarItens();
+            carregarUltimasDoacoes();
+        }, 30000);
+    </script>
+</body>
+</html>
