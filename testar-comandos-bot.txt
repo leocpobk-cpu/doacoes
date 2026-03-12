@@ -1,0 +1,11 @@
+# Comandos para testar o bot
+
+# Abra o Telegram e envie para @doacoesunaadecre_bot:
+
+/start
+
+# Depois teste os outros:
+/status
+/itens
+/faltam
+/doar
