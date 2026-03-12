@@ -312,7 +312,7 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_gx8_WdV2x6n9FoZooniJCQ_s0hWGsiW';
         
         const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Carregar dados ao iniciar
         window.addEventListener('DOMContentLoaded', () => {
@@ -323,8 +323,8 @@
 
         async function carregarEstatisticas() {
             try {
-                const { data: itens } = await supabase.from('itens_doacao').select('*');
-                const { data: doacoes } = await supabase.from('doacoes').select('*');
+                const { data: itens } = await supabaseClient.from('itens_doacao').select('*');
+                const { data: doacoes } = await supabaseClient.from('doacoes').select('*');
 
                 const completos = itens.filter(item => {
                     const doado = doacoes
@@ -383,8 +383,8 @@
 
         async function carregarItens() {
             try {
-                const { data: itens } = await supabase.from('itens_doacao').select('*').order('id');
-                const { data: doacoes } = await supabase.from('doacoes').select('*');
+                const { data: itens } = await supabaseClient.from('itens_doacao').select('*').order('id');
+                const { data: doacoes } = await supabaseClient.from('doacoes').select('*');
 
                 let html = '';
 
@@ -433,7 +433,7 @@
 
         async function carregarUltimasDoacoes() {
             try {
-                const { data: doacoes } = await supabase
+                const { data: doacoes } = await supabaseClient
                     .from('doacoes')
                     .select('*, itens_doacao(descricao, unidade)')
                     .order('data_doacao', { ascending: false })
