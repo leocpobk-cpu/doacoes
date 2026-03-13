@@ -219,6 +219,44 @@
             margin-top: 10px;
         }
 
+        .falta-box {
+            background: #ffe5e5;
+            border: 2px solid #e91e63;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .falta-box h2 {
+            color: #c2185b;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .falta-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #e91e63;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .falta-nome {
+            font-weight: bold;
+            color: #333;
+            flex: 1;
+        }
+
+        .falta-quantidade {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e91e63;
+            margin-left: 10px;
+        }
+
         .btn {
             display: inline-block;
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -283,6 +321,13 @@
                 <p><strong>Favorecido:</strong> Leonardo Cezario Pinto de Oliveira</p>
             </div>
 
+            <div class="falta-box" id="falta-box" style="display: none;">
+                <h2>🎯 O que ainda falta?</h2>
+                <div id="itens-falta">
+                    <div class="loading">⏳ Carregando...</div>
+                </div>
+            </div>
+
             <h2 class="section-title">📋 Itens Necessários</h2>
             <div id="itens-lista">
                 <div class="loading">⏳ Carregando itens...</div>
@@ -318,6 +363,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             carregarEstatisticas();
             carregarItens();
+            carregarItensFalta();
             carregarUltimasDoacoes();
         });
 
@@ -428,6 +474,47 @@
             } catch (error) {
                 console.error('Erro ao carregar itens:', error);
                 document.getElementById('itens-lista').innerHTML = '<div class="loading">❌ Erro ao carregar</div>';
+            }
+        }
+
+        async function carregarItensFalta() {
+            try {
+                const { data: itens } = await supabaseClient.from('itens_doacao').select('*').order('id');
+                const { data: doacoes } = await supabaseClient.from('doacoes').select('*');
+
+                let html = '';
+                let temItensIncompletos = false;
+
+                itens.forEach(item => {
+                    const doado = doacoes
+                        .filter(d => d.item_id === item.id)
+                        .reduce((sum, d) => sum + parseFloat(d.quantidade || 0), 0);
+
+                    const total = parseFloat(item.quantidade_total);
+                    const falta = Math.max(total - doado, 0);
+                    const percentual = Math.min((doado / total) * 100, 100);
+
+                    // Só mostra se não estiver completo
+                    if (percentual < 100 && falta > 0) {
+                        temItensIncompletos = true;
+                        html += `
+                            <div class="falta-item">
+                                <span class="falta-nome">${item.descricao}</span>
+                                <span class="falta-quantidade">⚠️ Faltam: ${falta.toFixed(1)} ${item.unidade}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (temItensIncompletos) {
+                    document.getElementById('itens-falta').innerHTML = html;
+                    document.getElementById('falta-box').style.display = 'block';
+                } else {
+                    document.getElementById('falta-box').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar itens faltantes:', error);
+                document.getElementById('falta-box').style.display = 'none';
             }
         }
 
