@@ -18,22 +18,21 @@ INSERT INTO itens_doacao (id, descricao, quantidade_total, unidade) VALUES
 -- FRUTAS (cotas por unidade ou embalagem) - Ordem Alfabética
 (1, '🍌 Banana Nanica (R$ 0,80 por unidade)', 30, 'unidades'),
 (2, '🥝 Kiwi (R$ 4,00 por unidade)', 12, 'unidades'),
-(3, '🍎 Maçã Grande (R$ 2,35 por unidade)', 12, 'unidades'),
-(4, '🟠 Mamão Formosa (R$ 8,00 por unidade)', 2, 'unidades'),
-(5, '🥭 Manga (R$ 3,00 por unidade)', 4, 'unidades'),
-(6, '💜 Maracujá (R$ 3,00 por unidade)', 4, 'unidades'),
-(7, '🍈 Melão Amarelo (R$ 9,00 por unidade)', 2, 'unidades'),
-(8, '🍓 Morango (R$ 12,00 por bandeja)', 6, 'bandejas'),
-(9, '🍇 Uva sem caroço (bandeja 500g - R$ 11,00)', 5, 'bandejas'),
+(3, '🟠 Mamão Formosa (R$ 8,00 por unidade)', 2, 'unidades'),
+(4, '🥭 Manga (R$ 3,00 por unidade)', 4, 'unidades'),
+(5, '💜 Maracujá (R$ 3,00 por unidade)', 4, 'unidades'),
+(6, '🍈 Melão Amarelo (R$ 9,00 por unidade)', 2, 'unidades'),
+(7, '🍓 Morango (R$ 12,00 por bandeja)', 6, 'bandejas'),
+(8, '🍇 Uva sem caroço (bandeja 500g - R$ 11,00)', 5, 'bandejas'),
 
 -- INGREDIENTES E KITS - Ordem Alfabética
-(10, '🥛 Creme de Leite (R$ 4,50 por caixinha)', 8, 'caixinhas'),
-(11, '🥤 Kit Copo Completo (Copo + Tampa + Colher - R$ 1,86)', 50, 'kits'),
-(12, '🍼 Leite Condensado (R$ 11,00 por lata)', 8, 'latas'),
-(13, '🧃 Suco Maguary concentrado (R$ 11,00 por garrafa)', 2, 'garrafas');
+(9, '🥛 Creme de Leite (R$ 4,50 por caixinha)', 8, 'caixinhas'),
+(10, '🥤 Kit Copo Completo (Copo + Tampa + Colher - R$ 1,86)', 50, 'kits'),
+(11, '🍼 Leite Condensado (R$ 11,00 por lata)', 8, 'latas'),
+(12, '🧃 Suco Maguary concentrado (R$ 11,00 por garrafa)', 2, 'garrafas');
 
 -- 5. ATUALIZAR SEQUÊNCIA
-SELECT setval('itens_doacao_id_seq', 13, true);
+SELECT setval('itens_doacao_id_seq', 12, true);
 
 -- ============================================
 -- VERIFICAR RESULTADO
