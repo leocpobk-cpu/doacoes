@@ -373,9 +373,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="img/logo.png" alt="Conjunto de Adolescentes Manancial de Bênção" class="header-logo" onerror="this.style.display='none'">
-            <h1>🍓 Doações para Salada de Frutas - 2ª Feira Gastronômica Coophamil</h1>
-            <p>Conjunto de Adolescentes Manancial de Bênção</p>
+            <img src="img/logo.png" alt="Conjunto de Adolescentes Manancial de Benção" class="header-logo" onerror="this.style.display='none'">
+            <h1>🍽️ Doações para Janta do Culto de Ações de Graças</h1>
+            <p>Pastor Jonatas - Conjunto de Adolescentes Manancial de Benção</p>
         </div>
 
         <div class="content">
@@ -518,23 +518,63 @@
             }
 
             // Separa itens por categoria
-            const frutas = itens.filter(item => item.id <= 8);
-            const ingredientes = itens.filter(item => item.id >= 9);
+            const proteinas = itens.filter(item => item.id === 1);
+            const graos = itens.filter(item => item.id >= 2 && item.id <= 3);
+            const temperos = itens.filter(item => item.id >= 4 && item.id <= 7);
+            const legumes = itens.filter(item => item.id >= 8 && item.id <= 12);
+            const salada = itens.filter(item => item.id >= 13 && item.id <= 17);
+            const frutas = itens.filter(item => item.id >= 18 && item.id <= 20);
+            const diversos = itens.filter(item => item.id >= 21);
 
             let html = '';
             
-            // Renderiza Frutas
-            if (frutas.length > 0) {
-                html += '<li class="categoria-titulo">🍎 Frutas (Cotas por Unidade ou Embalagem)</li>';
-                let indexFrutas = 1;
-                html += frutas.map(item => renderizarItem(item, indexFrutas++)).join('');
+            // Renderiza Proteínas
+            if (proteinas.length > 0) {
+                html += '<li class="categoria-titulo">🍗 Proteínas e Carnes</li>';
+                let index = 1;
+                html += proteinas.map(item => renderizarItem(item, index++)).join('');
             }
             
-            // Renderiza Ingredientes
-            if (ingredientes.length > 0) {
-                html += '<li class="categoria-titulo">🥄 Ingredientes e Kits de Consumo</li>';
-                let indexIngredientes = 1;
-                html += ingredientes.map(item => renderizarItem(item, indexIngredientes++)).join('');
+            // Renderiza Grãos
+            if (graos.length > 0) {
+                html += '<li class="categoria-titulo">🍚 Grãos e Cereais</li>';
+                let index = 1;
+                html += graos.map(item => renderizarItem(item, index++)).join('');
+            }
+            
+            // Renderiza Temperos
+            if (temperos.length > 0) {
+                html += '<li class="categoria-titulo">🧂 Temperos e Condimentos</li>';
+                let index = 1;
+                html += temperos.map(item => renderizarItem(item, index++)).join('');
+            }
+            
+            // Renderiza Legumes
+            if (legumes.length > 0) {
+                html += '<li class="categoria-titulo">🥜 Legumes e Verduras (Preparo)</li>';
+                let index = 1;
+                html += legumes.map(item => renderizarItem(item, index++)).join('');
+            }
+            
+            // Renderiza Salada
+            if (salada.length > 0) {
+                html += '<li class="categoria-titulo">🥗 Ingredientes para Salada</li>';
+                let index = 1;
+                html += salada.map(item => renderizarItem(item, index++)).join('');
+            }
+            
+            // Renderiza Frutas
+            if (frutas.length > 0) {
+                html += '<li class="categoria-titulo">🍎 Frutas</li>';
+                let index = 1;
+                html += frutas.map(item => renderizarItem(item, index++)).join('');
+            }
+            
+            // Renderiza Diversos
+            if (diversos.length > 0) {
+                html += '<li class="categoria-titulo">🛒 Ingredientes Diversos</li>';
+                let index = 1;
+                html += diversos.map(item => renderizarItem(item, index++)).join('');
             }
             
             container.innerHTML = html;
